@@ -25,7 +25,7 @@ found in the LICENSE file.
 namespace mitk
 {
   /**
-  * @brief Interface to the Kinect 2 camera. Uses the Microsoft SDK on Windows and libfreenect2 elsewhere.
+  * @brief Interface to the Kinect 2 camera based on libfreenect2.
   *
   * @ingroup ToFHardware
   */

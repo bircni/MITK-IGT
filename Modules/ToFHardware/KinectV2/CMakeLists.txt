@@ -1,25 +1,22 @@
 option(MITK_USE_TOF_KINECTV2 "Enable support for Kinect V2 camera" OFF)
 
 if(MITK_USE_TOF_KINECTV2)
-  if(WIN32)
-    find_library(MITK_KINECTV2_LIB KinectV20.lib DOC "Kinect V2 access library.")
-    find_path(MITK_KINECTV2_INCLUDE_DIR Kinect.h DOC "Include directory of Kinect V2 camera.")
-    set(_kinectv2_include_dirs ${MITK_KINECTV2_INCLUDE_DIR})
-    set(_kinectv2_libs ${MITK_KINECTV2_LIB})
-  else()
-    # The Microsoft SDK is Windows only, use libfreenect2 everywhere else.
-    find_package(freenect2 REQUIRED)
-    set(_kinectv2_include_dirs ${freenect2_INCLUDE_DIRS})
-    set(_kinectv2_libs ${freenect2_LIBRARIES})
-  endif()
+  find_package(freenect2 REQUIRED)
   set(MITK_TOF_AVAILABLE_CAMERAS ${MITK_TOF_AVAILABLE_CAMERAS},Microsoft Kinect V2)
+
+  if(WIN32)
+    # freenect2.dll and its libusb/turbojpeg dependencies are installed to
+    # <prefix>/bin, not next to the import library in <prefix>/lib.
+    get_filename_component(_freenect2_bin_dir "${freenect2_DIR}/../../../bin" ABSOLUTE)
+    set_property(GLOBAL APPEND PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS "${_freenect2_bin_dir}")
+  endif()
 
   MITK_CREATE_MODULE(
     INCLUDE_DIRS
       PUBLIC ${MITK_BIN_DIR}
-      PRIVATE ${_kinectv2_include_dirs}
+      PRIVATE ${freenect2_INCLUDE_DIRS}
     DEPENDS MitkToFHardware
-    ADDITIONAL_LIBS ${_kinectv2_libs}
+    ADDITIONAL_LIBS ${freenect2_LIBRARIES}
     AUTOLOAD_WITH MitkToFHardware
   )
 endif()
