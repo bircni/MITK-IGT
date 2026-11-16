@@ -15,6 +15,7 @@ found in the LICENSE file.
 #include <libfreenect2/frame_listener_impl.h>
 #include <libfreenect2/libfreenect2.hpp>
 #include <libfreenect2/logger.h>
+#include <libfreenect2/packet_pipeline.h>
 #include <libfreenect2/registration.h>
 
 #include <vtkCellArray.h>
@@ -262,7 +263,10 @@ namespace mitk
       return false;
     }
 
-    d->m_Device = d->m_Context->openDefaultDevice();
+    // The default pipeline is OpenGL-based and creates its own GL context on the calling
+    // thread, which fails next to Qt's context (e.g. on Wayland) and then terminates the
+    // process. The CPU pipeline needs no GL context. The device takes ownership of it.
+    d->m_Device = d->m_Context->openDefaultDevice(new libfreenect2::CpuPacketPipeline());
     if (d->m_Device == nullptr)
     {
       MITK_WARN << "Could not open Kinect 2!";
